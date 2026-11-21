@@ -1,0 +1,449 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#09051a">
+<meta name="color-scheme" content="dark">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src file: data: https://cdn.modrinth.com; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'">
+<title>DOClient</title>
+<style>
+:root{--bg:#09051a;--surf:rgba(34,21,60,.82);--surf2:rgba(56,34,98,.88);--line:rgba(196,160,255,.18);--text:#f5efff;--muted:#a99dc4;--acc:#a65cff;--acc2:#42e7ef;--accg:#a65cff55;--ok:#5af0a0;--bad:#ff6b86;--sb:env(safe-area-inset-bottom,0px);--st:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--bg)}
+body{margin:0;color:var(--text);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh;padding-bottom:calc(88px + var(--sb));background:radial-gradient(120% 60% at 85% -10%,rgba(120,60,220,.4),transparent 60%),radial-gradient(90% 50% at 0% 45%,rgba(30,180,200,.1),transparent 60%),linear-gradient(rgba(166,92,255,.05) 1px,transparent 1px) 0 0/28px 28px,linear-gradient(90deg,rgba(166,92,255,.05) 1px,transparent 1px) 0 0/28px 28px,var(--bg);background-attachment:fixed}
+button,input,select{font:inherit;color:inherit}button{border:0;background:none;cursor:pointer;padding:0}
+button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace;letter-spacing:1.4px;text-transform:uppercase;font-size:10.5px}
+.muted{color:var(--muted)}.small{font-size:12px;line-height:1.5}
+.px{clip-path:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px));background:var(--surf);box-shadow:inset 0 0 0 1px var(--line),inset 2px 2px 0 rgba(255,255,255,.07),inset -2px -2px 0 rgba(0,0,0,.35)}
+.top{position:sticky;top:0;z-index:6;display:flex;align-items:center;gap:10px;padding:calc(10px + var(--st)) 14px 10px;background:rgba(9,5,26,.88);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.top img{width:36px;height:36px;border-radius:9px;object-fit:cover}
+.brand{font-weight:900;letter-spacing:3px;font-size:15px}.brand b{background:linear-gradient(90deg,var(--acc),var(--acc2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.chip{margin-left:auto;display:flex;align-items:center;gap:8px;padding:7px 11px 7px 8px;max-width:190px;font-weight:700}
+.chip canvas{width:24px;height:24px;image-rendering:pixelated;flex:none}.chip span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chip i{font-style:normal;color:var(--muted);font-size:10px}
+main{max-width:560px;margin:0 auto;padding:16px 14px}
+.page{display:none}.page.active{display:block;animation:in .22s ease-out}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:26px;line-height:1.1;margin:2px 0 6px;letter-spacing:-.3px}h2{font-size:17px;margin:0 0 10px}h3{font-size:14px;margin:0 0 6px}
+.eyebrow{color:var(--acc2)}
+.card{padding:15px;margin-top:12px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}.grow{flex:1;min-width:0}.ell{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 15px;font-weight:700;background:var(--surf2);clip-path:polygon(0 4px,4px 4px,4px 0,calc(100% - 4px) 0,calc(100% - 4px) 4px,100% 4px,100% calc(100% - 4px),calc(100% - 4px) calc(100% - 4px),calc(100% - 4px) 100%,4px 100%,4px calc(100% - 4px),0 calc(100% - 4px));box-shadow:inset 0 0 0 1px var(--line),inset 2px 2px 0 rgba(255,255,255,.08),inset -2px -2px 0 rgba(0,0,0,.35)}
+.btn:active{transform:translateY(1px);filter:brightness(1.15)}
+.btn.pri{background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(0,0,0,.2)),var(--acc);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.35)}
+.btn.bad{color:#ffb0be;background:rgba(80,24,44,.85)}.btn.sm{min-height:36px;padding:6px 11px;font-size:13px}.btn:disabled{opacity:.4;pointer-events:none}.btn.block{width:100%}
+.btn svg,.tile svg,.nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.stage{position:relative;height:350px;margin-top:4px;overflow:hidden;perspective:820px;touch-action:pan-y;user-select:none;-webkit-user-select:none;background:radial-gradient(60% 55% at 50% 52%,var(--accg),transparent 70%),linear-gradient(180deg,rgba(26,14,50,.9),rgba(14,8,32,.9))}
+.stage.tall{height:410px}
+.floor{position:absolute;left:50%;bottom:34px;width:210px;height:44px;margin-left:-105px;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.65),transparent);transform:scaleY(.75)}
+.ring{position:absolute;left:50%;bottom:30px;width:230px;height:52px;margin-left:-115px;border-radius:50%;border:1.5px solid var(--acc);opacity:.55;box-shadow:0 0 22px var(--accg),inset 0 0 18px var(--accg)}
+.tag{position:absolute;left:12px;top:12px;padding:5px 9px;background:rgba(0,0,0,.4);color:var(--acc2);z-index:2}
+.nm{position:absolute;left:0;right:0;bottom:8px;text-align:center;font-weight:800;letter-spacing:1px;z-index:2;text-shadow:0 2px 8px #000}
+.tip{position:absolute;right:12px;top:14px;color:var(--muted);z-index:2}
+.char{position:absolute;left:50%;top:46%;width:0;height:0;transform-style:preserve-3d}
+.bob{transform-style:preserve-3d;animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.rig,.part,.pivot,.box{position:absolute;left:0;top:0;width:0;height:0;transform-style:preserve-3d}
+.face{position:absolute;image-rendering:pixelated;background-image:var(--skin);backface-visibility:hidden}
+.pivot.a{animation:swA var(--dur,3.4s) ease-in-out infinite}.pivot.b{animation:swB var(--dur,3.4s) ease-in-out infinite}
+@keyframes swA{0%,100%{transform:rotateX(calc(var(--amp,5)*1deg))}50%{transform:rotateX(calc(var(--amp,5)*-1deg))}}
+@keyframes swB{0%,100%{transform:rotateX(calc(var(--amp,5)*-1deg))}50%{transform:rotateX(calc(var(--amp,5)*1deg))}}
+.char.walk{--amp:34;--dur:1.05s}
+.pivot.cp{animation:cape 3.4s ease-in-out infinite}.char.walk .pivot.cp{animation-duration:1.05s}
+@keyframes cape{0%,100%{transform:rotateX(5deg)}50%{transform:rotateX(11deg)}}
+.cape{position:absolute;background-image:var(--cape);background-repeat:no-repeat;image-rendering:pixelated;backface-visibility:visible}
+.char:not(.hascape) .part.capep{display:none}
+body.calm .bob,body.calm .pivot{animation:none!important}
+.pill{display:flex;align-items:center;gap:10px;width:100%;margin-top:12px;padding:11px 14px;text-align:left}
+.pill .dot{width:9px;height:9px;background:var(--ok);box-shadow:0 0 10px var(--ok)}.pill.none .dot{background:var(--bad);box-shadow:0 0 10px var(--bad)}
+.playwrap{margin-top:12px;filter:drop-shadow(0 0 14px var(--accg));animation:glow 2.6s ease-in-out infinite}
+@keyframes glow{50%{filter:drop-shadow(0 0 26px var(--accg))}}
+body.calm .playwrap{animation:none}
+.play{position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:68px;color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.22),rgba(0,0,0,.25)),var(--acc);clip-path:polygon(0 6px,6px 6px,6px 0,calc(100% - 6px) 0,calc(100% - 6px) 6px,100% 6px,100% calc(100% - 6px),calc(100% - 6px) calc(100% - 6px),calc(100% - 6px) 100%,6px 100%,6px calc(100% - 6px),0 calc(100% - 6px));box-shadow:inset 2px 2px 0 rgba(255,255,255,.3),inset -3px -3px 0 rgba(0,0,0,.35)}
+.play .pl{font-size:24px;font-weight:900;letter-spacing:7px;text-shadow:0 2px 0 rgba(0,0,0,.4)}.play small{font-size:11px;opacity:.85;letter-spacing:1px}
+.play:after{content:"";position:absolute;top:0;bottom:0;width:40%;left:-60%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);animation:shine 4s ease-in-out infinite}
+@keyframes shine{0%,60%{left:-60%}100%{left:130%}}body.calm .play:after{animation:none}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 6px;font-size:12px;font-weight:700;color:var(--text)}.tile svg{color:var(--acc2);width:26px;height:26px}
+.notice{margin-top:12px;padding:10px 12px;font-size:12px;color:#c9f6f8;background:rgba(14,40,48,.75)}
+.field{display:block;margin:10px 0}.field>span{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+input[type=text],select{width:100%;min-height:44px;padding:10px 12px;background:rgba(8,4,20,.8);border:1px solid var(--line);border-radius:0;box-shadow:inset 2px 2px 0 rgba(0,0,0,.4);color:var(--text)}
+select option{background:#1a1030}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.seg{display:flex;gap:6px;margin:10px 0;flex-wrap:wrap}.seg button{flex:1;min-width:70px;padding:9px 6px;font-weight:700;font-size:13px;color:var(--muted);background:rgba(8,4,20,.7);box-shadow:inset 0 0 0 1px var(--line)}
+.seg button.on{color:#fff;background:linear-gradient(180deg,rgba(255,255,255,.16),rgba(0,0,0,.2)),var(--acc);box-shadow:none}
+.item{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(196,160,255,.12)}.item:last-child{border:0}
+.cube{width:42px;height:42px;flex:none;display:grid;place-items:center;font-size:20px;background:linear-gradient(135deg,var(--acc),#2a1650);box-shadow:inset 2px 2px 0 rgba(255,255,255,.25),inset -2px -2px 0 rgba(0,0,0,.35)}
+.cube img{width:100%;height:100%;object-fit:cover;image-rendering:auto}
+.badge{display:inline-block;padding:2px 6px;color:#06210f;background:var(--ok);font-weight:800}
+.clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty{padding:22px 10px;text-align:center;color:var(--muted)}
+.nav{position:fixed;z-index:10;left:0;right:0;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);padding:6px 6px calc(6px + var(--sb));background:rgba(12,7,28,.94);backdrop-filter:blur(16px);border-top:1px solid var(--line)}
+.nav button{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 0 6px;color:#9488b3;font-size:10.5px;font-weight:700;letter-spacing:.4px}
+.nav button.active{color:#fff}.nav button.active svg{color:var(--acc2);filter:drop-shadow(0 0 6px var(--acc2))}
+.nav button.active:before{content:"";position:absolute;top:-6px;left:28%;right:28%;height:3px;background:var(--acc);box-shadow:0 0 10px var(--acc)}
+#back{display:none;position:fixed;inset:0;z-index:30;background:rgba(5,2,14,.72);backdrop-filter:blur(4px)}#back.on{display:block}
+#sheet{position:fixed;left:0;right:0;bottom:0;z-index:31;max-height:88vh;overflow:auto;padding:16px 14px calc(18px + var(--sb));background:#150d2b;border-top:2px solid var(--acc);transform:translateY(105%);visibility:hidden;transition:transform .25s ease,visibility 0s .25s;max-width:560px;margin:0 auto}
+#sheet.on{transform:none;visibility:visible;transition-delay:0s}
+.sheethd{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+.toast{position:fixed;z-index:50;left:14px;right:14px;bottom:calc(92px + var(--sb));max-width:532px;margin:0 auto;padding:12px 14px;display:none;background:#2b1d4a;font-size:13px}
+#launch{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(6,3,16,.92);backdrop-filter:blur(8px)}#launch.on{display:flex}
+.lbox{width:100%;max-width:380px;padding:22px 18px;text-align:center}
+.gauge{position:relative;width:120px;height:120px;margin:0 auto 12px}.gauge svg{transform:rotate(-90deg)}.gauge circle{fill:none;stroke-width:8}
+.gauge .bg{stroke:rgba(255,255,255,.08)}.gauge .fg{stroke:var(--acc);stroke-linecap:butt;stroke-dasharray:326.7;stroke-dashoffset:326.7;transition:stroke-dashoffset .45s ease;filter:drop-shadow(0 0 6px var(--acc))}
+.gauge img{position:absolute;inset:22px;width:76px;height:76px;border-radius:14px;object-fit:cover}
+.steps{text-align:left;margin:14px 0}.step{display:flex;gap:10px;padding:7px 0;font-size:13px;color:var(--muted)}.step i{font-style:normal;width:20px;text-align:center}.step.ok{color:var(--text)}.step.ok i{color:var(--ok)}.step.fail{color:#ffb0be}.step.fail i{color:var(--bad)}.step.run i{color:var(--acc2);animation:spin 1s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.swatches{display:flex;gap:10px}.swatch{width:40px;height:40px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.12)}.swatch.on{box-shadow:inset 0 0 0 3px #fff}
+.sw{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid rgba(196,160,255,.12)}.sw:last-child{border:0}.sw input{accent-color:var(--acc);width:22px;height:22px}
+.founder{font-size:24px;font-weight:900;letter-spacing:1px;color:var(--acc2);overflow-wrap:anywhere}
+.discord{display:inline-flex;text-decoration:none;color:#fff;background:#5865f2;padding:12px 16px;font-weight:800}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<header class="top">
+  <img src="doclient-logo.png" alt="DOClient">
+  <div class="brand">DO<b>CLIENT</b></div>
+  <button class="chip px" id="chip" aria-label="Accounts"><canvas id="chipHead" width="24" height="24"></canvas><span id="chipName">No account</span><i>▾</i></button>
+</header>
+
+<main>
+<section class="page active" id="home">
+  <div class="stage px" id="homeStage"><div class="tag mono px" id="homeTag">Offline</div><div class="tip mono">Drag to rotate</div><div class="ring"></div><div class="floor"></div><div class="nm" id="homeName"></div></div>
+  <button class="pill px" id="instPill"><span class="dot"></span><span class="grow ell" id="instPillText"></span><span class="muted">›</span></button>
+  <div class="playwrap"><button class="play" id="playBtn"><span class="pl">PLAY</span><small id="playSub">&nbsp;</small></button></div>
+  <div class="grid3">
+    <button class="tile px" id="tInst"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Instances</button>
+    <button class="tile px" id="tMods"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></svg>Mods</button>
+    <button class="tile px" id="tPacks"><svg viewBox="0 0 24 24"><path d="M4 5h16v14H4zM4 15l5-5 4 4 3-3 4 4M15 9h.01"/></svg>Resource packs</button>
+  </div>
+  <div class="card px"><div class="row"><h2 class="grow" style="margin:0">Servers</h2><button class="btn sm" id="addSrv">＋ Add</button></div><div id="srvList"></div></div>
+  <div class="notice px"><b>Engine pending.</b> Accounts, instances, content and the installer work now. The Java runtime and renderer that actually start Minecraft are the next milestone.</div>
+</section>
+
+<section class="page" id="instances">
+  <div class="mono eyebrow">Library</div><h1>Instances</h1><p class="muted small" style="margin:0 0 4px">Each instance has its own folder, version, loader and performance profile.</p>
+  <button class="btn pri block" id="newInst" style="margin-top:10px">＋ New instance</button>
+  <div id="instList"></div>
+</section>
+
+<section class="page" id="content">
+  <div class="mono eyebrow">Content</div><h1>Mods &amp; packs</h1>
+  <div class="seg" id="cTabs"></div>
+  <div class="card px" id="cBanner" style="margin-top:0"></div>
+  <div class="card px" id="cTools"></div>
+  <div id="cResults"></div>
+  <div class="card px"><div class="mono muted" style="margin-bottom:6px">Installed</div><div id="cInstalled"></div></div>
+</section>
+
+<section class="page" id="skin">
+  <div class="mono eyebrow">Character</div><h1>Skin studio</h1>
+  <div class="stage tall px" id="skinStage"><div class="tag mono px" id="skinTag">Default skin</div><div class="tip mono">Drag to rotate</div><div class="ring"></div><div class="floor"></div></div>
+  <div class="grid3" style="grid-template-columns:1fr 1fr"><button class="btn pri" id="pSkin">Choose skin</button><button class="btn" id="pCape">Choose cape</button><button class="btn" id="pWalk">▶ Walk</button><button class="btn bad" id="pReset">Reset</button></div>
+  <p class="muted small">Skin: PNG 64×64 or 64×32. Cape: PNG 64×32. Files stay on your device — nothing is uploaded or published to Mojang.</p>
+</section>
+
+<section class="page" id="settings">
+  <div class="mono eyebrow">Preferences</div><h1>Settings</h1>
+  <div class="card px"><h3>Accent</h3><div class="swatches" id="swatches"></div>
+    <div class="sw" style="margin-top:8px"><div><b>Calm mode</b><div class="muted small">Stops idle animations and auto-rotation (saves battery)</div></div><input type="checkbox" id="calm"></div>
+    <div class="sw"><div class="grow"><b>Interface scale</b><div class="muted small">Text and spacing</div></div><input type="range" id="scale" min="90" max="115" style="width:46%"></div>
+  </div>
+  <div class="card px"><h3>Game</h3><p class="muted small" style="margin:0">RAM, renderer and graphics options are set per instance in <b>Instances → New instance</b>. Presets write a real <span class="mono">options.txt</span> into the instance folder.</p></div>
+  <div class="card px"><div class="row"><div class="grow"><b>About DOClient</b><div class="muted small">Founder, Discord, credits</div></div><button class="btn sm" id="goAbout">Open</button></div></div>
+  <div class="card px"><div class="row"><div class="grow"><b>Reset app data</b><div class="muted small">Accounts, instance list and settings (folders are removed too)</div></div><button class="btn bad sm" id="reset">Reset</button></div></div>
+</section>
+
+<section class="page" id="about">
+  <div class="card px" style="text-align:center;padding:24px 16px"><img src="doclient-logo.png" alt="DOClient logo" style="width:min(180px,56vw);border-radius:26px"><div class="mono eyebrow" style="margin-top:14px">About the project</div><h1>DOClient Mobile</h1><div class="founder">FOUNDER-XYnOX_</div><p class="muted">Founder &amp; project lead</p><a class="discord px" href="https://discord.gg/5Bc4a822M">Join the Discord ↗</a></div>
+  <div class="card px"><h3>Inspired by Zalith Launcher v1</h3><p class="muted small" style="margin:0">DOClient is an independent project inspired by high-level launcher usability ideas. It does not copy Zalith source code or assets and is not affiliated with ZalithLauncher, Mojang, Microsoft or Modrinth. Any future reuse of GPL-licensed source must comply with its license.</p></div>
+  <div class="card px"><h3>Version</h3><p class="muted small" style="margin:0">0.8.0 · Android first · ARM64 device testing required · Game engine pending</p></div>
+  <button class="btn block" id="aboutBack" style="margin-top:12px">← Back to settings</button>
+</section>
+</main>
+
+<nav class="nav" aria-label="Main">
+  <button data-page="home" class="active"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/></svg>Home</button>
+  <button data-page="instances"><svg viewBox="0 0 24 24"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>Instances</button>
+  <button data-page="content"><svg viewBox="0 0 24 24"><path d="M12 3l8 4.5v9L12 21l-8-4.5v-9zM4 7.5l8 4.5 8-4.5M12 12v9"/></svg>Content</button>
+  <button data-page="skin"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></svg>Skin</button>
+  <button data-page="settings"><svg viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/></svg>Settings</button>
+</nav>
+
+<div id="back"></div>
+<div id="sheet" role="dialog" aria-modal="true"><div class="sheethd"><h2 id="sheetTitle" style="margin:0"></h2><button class="btn sm" id="sheetX">Close</button></div><div id="sheetBody"></div></div>
+<div class="toast px" id="toast" role="status" aria-live="polite"></div>
+<div id="launch"><div class="lbox px"><div class="gauge"><svg width="120" height="120" viewBox="0 0 120 120"><circle class="bg" cx="60" cy="60" r="52"/><circle class="fg" id="gfg" cx="60" cy="60" r="52"/></svg><img src="doclient-logo.png" alt=""></div><h2 id="lTitle">Preflight</h2><div class="steps" id="lSteps"></div><p class="small muted" id="lMsg"></p><button class="btn block" id="lClose" style="display:none">Close</button></div></div>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const B=window.AndroidBridge||null;
+const reduceMQ=matchMedia('(prefers-reduced-motion: reduce)');
+function E(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+function rid(){return (Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)+'00000000').slice(0,8)}
+function btn(text,cls,fn){const b=E('button','btn '+(cls||''),text);b.addEventListener('click',fn);return b}
+function confirmTap(b,label,fn){let armed=false,t;const o=b.textContent;b.addEventListener('click',()=>{if(!armed){armed=true;b.textContent=label;t=setTimeout(()=>{armed=false;b.textContent=o},3000);return}clearTimeout(t);armed=false;b.textContent=o;fn()})}
+
+/* ---------- state ---------- */
+const KEY='doclient.mobile.v2';
+const PRESETS={potato:{n:'Potato',ram:1024,r:'GL4ES',d:'3 GB devices · 120+ FPS target'},balanced:{n:'Balanced',ram:2048,r:'GL4ES',d:'Smooth on most phones'},quality:{n:'Quality',ram:3072,r:'ANGLE',d:'Flagship devices'}};
+const LOADERS={vanilla:'Vanilla',fabric:'Fabric',forge:'Forge',neoforge:'NeoForge'};
+const ACC={purple:['#a65cff','#42e7ef'],emerald:['#2fdc8b','#7be9ff'],ember:['#ff8a3d','#ffd166'],rose:['#ff5c93','#8fe7ff']};
+const KINDS={mods:'Mods',resourcepacks:'Packs',shaderpacks:'Shaders'};
+const FALLBACK_VERSIONS=['1.21.11','1.21.10','1.21.8','1.21.4','1.20.6','1.20.4','1.20.1','1.19.4','1.18.2','1.16.5','1.12.2','1.8.9'];
+let versions=FALLBACK_VERSIONS.slice();
+function fresh(){return{v:2,accounts:[],account:null,instances:[],instance:null,servers:[],set:{accent:'purple',calm:false,scale:100},tab:'mods'}}
+function load(){
+  try{const s=JSON.parse(localStorage.getItem(KEY));if(s&&s.v===2)return Object.assign(fresh(),s,{set:Object.assign(fresh().set,s.set)})}catch(e){}
+  const s=fresh();
+  try{JSON.parse(localStorage.getItem('doclient.mobile.profiles')||'[]').forEach(p=>{const id=rid();s.instances.push({id,name:String(p.name).slice(0,32),ver:FALLBACK_VERSIONS[0],loader:'vanilla',preset:'balanced',ram:2048,renderer:'GL4ES'});if(B)B.initInstance(id,'balanced')});if(s.instances[0])s.instance=s.instances[0].id}catch(e){}
+  return s}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('Could not save (storage full?)')}}
+const acct=()=>S.accounts.find(a=>a.id===S.account)||null;
+const inst=()=>S.instances.find(i=>i.id===S.instance)||null;
+function toast(t){const e=$('toast');e.textContent=t;e.style.display='block';clearTimeout(toast.t);toast.t=setTimeout(()=>e.style.display='none',3200)}
+const calm=()=>S.set.calm||reduceMQ.matches;
+
+/* ---------- theme ---------- */
+function applyTheme(){const [a,b]=ACC[S.set.accent]||ACC.purple,r=document.documentElement.style;r.setProperty('--acc',a);r.setProperty('--acc2',b);r.setProperty('--accg',a+'66');r.fontSize=(S.set.scale/100*15)+'px';document.body.classList.toggle('calm',calm())}
+
+/* ---------- textures ---------- */
+function rects(u,v,w,h,d){return{top:[u+d,v,w,d],bottom:[u+d+w,v,w,d],right:[u,v+d,d,h],front:[u+d,v+d,w,h],left:[u+d+w,v+d,d,h],back:[u+d+w+d,v+d,w,h]}}
+function paintBox(g,u,v,w,h,d,col){const r=rects(u,v,w,h,d);for(const k in r){g.fillStyle=col[k]||col.all;g.fillRect(...r[k])}}
+function defaultSkin(){
+  const c=document.createElement('canvas');c.width=c.height=64;const g=c.getContext('2d');
+  const K='#14101f',P='#4b238f',P2='#6d34c8',H='#2a1650',G='#f6c445',G2='#c98f1c',C='#42e7ef';
+  paintBox(g,0,0,8,8,8,{all:H,top:'#3a1d70',bottom:K});
+  g.fillStyle=C;g.fillRect(9,11,2,2);g.fillRect(13,11,2,2);g.fillStyle='#0d0816';g.fillRect(11,14,2,1);
+  paintBox(g,16,16,8,12,4,{all:K});g.fillStyle=P;g.fillRect(23,20,2,12);g.fillStyle=G2;g.fillRect(20,30,8,1);
+  [[40,16],[32,48]].forEach(([u,v])=>{paintBox(g,u,v,4,12,4,{all:P,top:P2,bottom:K});const r=rects(u,v,4,12,4);['right','front','left','back'].forEach(k=>{g.fillStyle=K;g.fillRect(r[k][0],r[k][1]+10,4,2)})});
+  [[0,16],[16,48]].forEach(([u,v])=>{paintBox(g,u,v,4,12,4,{all:K});const r=rects(u,v,4,12,4);['right','front','left','back'].forEach(k=>{g.fillStyle=P;g.fillRect(r[k][0],r[k][1]+10,4,2)})});
+  // gold crown on hat layer
+  const hr=rects(32,0,8,8,8);['right','front','left','back'].forEach(k=>{const [x,y]=hr[k];g.fillStyle=G;g.fillRect(x,y+1,8,1);for(let i=0;i<8;i+=2)g.fillRect(x+i,y,1,1)});
+  g.fillStyle='#ff4fa3';g.fillRect(43,9,2,1);
+  g.fillStyle=G;g.fillRect(40,0,8,8);g.clearRect(41,1,6,6);
+  return c}
+function toCanvas(img,kind){const c=document.createElement('canvas'),g=c.getContext('2d');g.imageSmoothingEnabled=false;
+  if(kind==='cape'){c.width=64;c.height=32;g.drawImage(img,0,0,64,32);return c}
+  c.width=c.height=64;const h=Math.round(img.height*64/img.width);g.drawImage(img,0,0,64,h);
+  if(h===32){g.drawImage(c,0,16,16,16,16,48,16,16);g.drawImage(c,40,16,16,16,32,48,16,16)}
+  return c}
+const loadImg=src=>new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src});
+let skinC=defaultSkin(),capeC=null;
+function drawHead(cv){const g=cv.getContext('2d');g.imageSmoothingEnabled=false;g.clearRect(0,0,cv.width,cv.height);g.drawImage(skinC,8,8,8,8,0,0,cv.width,cv.height);g.drawImage(skinC,40,8,8,8,0,0,cv.width,cv.height)}
+async function refreshTextures(){
+  const a=acct();skinC=defaultSkin();capeC=null;
+  try{if(a&&a.skin)skinC=toCanvas(await loadImg(a.skin),'skin')}catch(e){}
+  try{if(a&&a.cape)capeC=toCanvas(await loadImg(a.cape),'cape')}catch(e){}
+  const su='url("'+skinC.toDataURL()+'")',cu=capeC?'url("'+capeC.toDataURL()+'")':'none';
+  chars.forEach(c=>{c.el.style.setProperty('--skin',su);c.el.style.setProperty('--cape',cu);c.el.classList.toggle('hascape',!!capeC)});
+  drawHead($('chipHead'));$('skinTag').textContent=a?(a.skin?'Custom skin':'Default skin')+(capeC?' + cape':''):'Default skin'}
+
+/* ---------- 3D character ---------- */
+const chars=[];
+function face(w,h,tx,u,v,g,sw,sh,shade,fw,fh){// w,h rendered size; texture rect (u,v,sw,sh)
+  const f=E('div','face'),kx=w/sw,ky=h/sh,c=n=>'calc(var(--u)*'+n+')';
+  f.style.cssText='width:'+c(w)+';height:'+c(h)+';left:'+c(-w/2)+';top:'+c(-h/2)+';transform:'+tx.replace(/@(-?[\d.]+)/g,(m,n)=>c(n))+';background-size:'+c(64*kx)+' '+c(64*ky)+';background-position:'+c(-u*kx)+' '+c(-v*ky)+';filter:brightness('+shade+')';
+  return f}
+function mkBox(w,h,d,u,v,g){
+  const b=E('div','box'),r=rects(u,v,w,h,d),W=w+g,H=h+g,D=d+g;
+  b.style.transform='translateY(calc(var(--u)*'+h/2+'))';
+  const defs=[['front',W,H,'translateZ(@'+D/2+')',1],['back',W,H,'rotateY(180deg) translateZ(@'+D/2+')',.8],['right',D,H,'rotateY(-90deg) translateZ(@'+W/2+')',.72],['left',D,H,'rotateY(90deg) translateZ(@'+W/2+')',.72],['top',W,D,'rotateX(90deg) translateZ(@'+H/2+')',1.08],['bottom',W,D,'rotateX(-90deg) translateZ(@'+H/2+')',.55]];
+  defs.forEach(([k,fw,fh,tx,sh])=>{const t=r[k];b.append(face(fw,fh,tx,t[0],t[1],g,t[2],t[3],sh))});
+  return b}
+function buildChar(u){
+  const root=E('div','char'),bob=E('div','bob'),rig=E('div','rig');root.style.setProperty('--u',u+'px');
+  rig.style.transform='translateY(calc(var(--u)*-16))';
+  const parts=[[8,8,8,0,0,0,0,32,0,''],[4,12,4,40,16,-6,8,40,32,'a'],[4,12,4,32,48,6,8,48,48,'b'],[8,12,4,16,16,0,8,16,32,''],[4,12,4,0,16,-2,20,0,32,'b'],[4,12,4,16,48,2,20,0,48,'a']];
+  parts.forEach(([w,h,d,u1,v1,x,y,u2,v2,an])=>{
+    const p=E('div','part'),pv=E('div','pivot '+an);p.style.transform='translate3d(calc(var(--u)*'+x+'),calc(var(--u)*'+y+'),0)';
+    pv.append(mkBox(w,h,d,u1,v1,0),mkBox(w,h,d,u2,v2,.9));p.append(pv);rig.append(p)});
+  const cp=E('div','part capep'),cv=E('div','pivot cp'),cape=E('div','cape');
+  cp.style.transform='translate3d(0,calc(var(--u)*8),calc(var(--u)*-2.6))';
+  cape.style.cssText='width:calc(var(--u)*10);height:calc(var(--u)*16);left:calc(var(--u)*-5);top:0;transform:rotateY(180deg);background-size:calc(var(--u)*64) calc(var(--u)*32);background-position:calc(var(--u)*-1) calc(var(--u)*-1)';
+  cv.append(cape);cp.append(cv);rig.append(cp);
+  bob.append(rig);root.append(bob);return root}
+function mountChar(stageId,u,page){
+  const el=buildChar(u),c={el,page,ang:28,drag:false,resume:0};chars.push(c);$(stageId).prepend(el);apply(c);
+  const st=$(stageId);let lx=0;
+  st.addEventListener('pointerdown',e=>{c.drag=true;lx=e.clientX;try{st.setPointerCapture(e.pointerId)}catch(_){}});
+  st.addEventListener('pointermove',e=>{if(!c.drag)return;c.ang+=(e.clientX-lx)*.7;lx=e.clientX;apply(c)});
+  const up=()=>{c.drag=false;c.resume=performance.now()+1800};st.addEventListener('pointerup',up);st.addEventListener('pointercancel',up);
+  return c}
+function apply(c){c.el.style.transform='rotateX(-9deg) rotateY('+c.ang+'deg)'}
+let activePage='home',lastT=0;
+function tick(t){requestAnimationFrame(tick);const dt=Math.min(50,t-lastT||16);lastT=t;if(document.hidden||calm())return;
+  chars.forEach(c=>{if(c.page===activePage&&!c.drag&&t>c.resume){c.ang+=dt*.022;apply(c)}})}
+
+/* ---------- navigation / sheets ---------- */
+function go(page){
+  activePage=page;
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('active',p.id===page));
+  document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page||(page==='about'&&b.dataset.page==='settings')));
+  window.scrollTo(0,0);
+  if(page==='content')renderContent();
+}
+document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>go(b.dataset.page)));
+function openSheet(title,build){$('sheetTitle').textContent=title;const body=$('sheetBody');body.replaceChildren();build(body);$('back').classList.add('on');$('sheet').classList.add('on')}
+function closeSheet(){$('back').classList.remove('on');$('sheet').classList.remove('on')}
+$('back').addEventListener('click',closeSheet);$('sheetX').addEventListener('click',closeSheet);
+window.onBack=()=>{if($('launch').classList.contains('on')){$('launch').classList.remove('on');return true}if($('sheet').classList.contains('on')){closeSheet();return true}if(activePage==='about'){go('settings');return true}if(activePage!=='home'){go('home');return true}return false};
+
+/* ---------- accounts ---------- */
+function headCanvas(a,size){const cv=E('canvas');cv.width=cv.height=size;cv.style.cssText='width:'+size+'px;height:'+size+'px;image-rendering:pixelated';const g=cv.getContext('2d');g.imageSmoothingEnabled=false;
+  const draw=s=>{g.drawImage(s,8,8,8,8,0,0,size,size);g.drawImage(s,40,8,8,8,0,0,size,size)};
+  if(a&&a.skin){loadImg(a.skin).then(i=>draw(toCanvas(i,'skin'))).catch(()=>draw(defaultSkin()))}else draw(defaultSkin());return cv}
+function openAccounts(){openSheet('Accounts',body=>{
+  const list=E('div');
+  const render=()=>{list.replaceChildren();if(!S.accounts.length)list.append(E('p','empty','No accounts yet. Add an offline account below.'));
+    S.accounts.forEach(a=>{const row=E('div','item'),info=E('div','grow'),n=E('div','ell',a.name);n.style.fontWeight='800';const u=E('div','muted small ell',a.uuid?'offline · '+a.uuid:'offline');
+      info.append(n,u);const use=btn(a.id===S.account?'In use':'Use',a.id===S.account?'sm':'sm pri',()=>{S.account=a.id;save();refreshTextures();renderAll();closeSheet()});if(a.id===S.account)use.disabled=true;
+      const del=btn('✕','sm bad',()=>{});confirmTap(del,'Sure?',()=>{S.accounts=S.accounts.filter(x=>x.id!==a.id);if(S.account===a.id)S.account=S.accounts[0]?S.accounts[0].id:null;save();refreshTextures();renderAll();render()});
+      row.append(headCanvas(a,34),info,use,del);list.append(row)})};
+  render();
+  const f=E('label','field'),sp=E('span',null,'New offline username (3–16 letters, numbers, _)'),inp=E('input');inp.type='text';inp.maxLength=16;inp.autocapitalize='off';inp.spellcheck=false;inp.placeholder='Steve_01';f.append(sp,inp);
+  const add=btn('＋ Add offline account','pri block',()=>{const n=inp.value.trim();if(!/^[A-Za-z0-9_]{3,16}$/.test(n))return toast('Use 3–16 letters, numbers or underscores.');if(S.accounts.some(a=>a.name.toLowerCase()===n.toLowerCase()))return toast('That account already exists.');
+    const a={id:rid(),name:n,uuid:B?B.offlineUuid(n):'',skin:null,cape:null};S.accounts.push(a);S.account=a.id;save();refreshTextures();renderAll();closeSheet();toast('Welcome, '+n)});
+  const ms=E('div','notice px');ms.textContent='Premium (Microsoft) sign-in is not available yet — it needs the Android OAuth flow and encrypted token storage.';
+  body.append(list,f,add,ms)})}
+$('chip').addEventListener('click',openAccounts);
+
+/* ---------- instances ---------- */
+function instLabel(i){return i.ver+' · '+LOADERS[i.loader]+' · '+i.ram+' MB · '+i.renderer}
+function openNewInstance(){openSheet('New instance',body=>{
+  let loader='vanilla',preset='potato';
+  const f1=E('label','field'),s1=E('span',null,'Name'),n=E('input');n.type='text';n.maxLength=32;n.placeholder='Survival 1.21';f1.append(s1,n);
+  const f2=E('label','field'),s2=E('span',null,'Minecraft version'),sel=E('select');versions.forEach(v=>{const o=E('option',null,v);o.value=v;sel.append(o)});f2.append(s2,sel);
+  const lt=E('div','mono muted','Loader'),lg=E('div','seg'),pt=E('div','mono muted','Performance profile'),pg=E('div','seg'),info=E('p','muted small');
+  const draw=()=>{lg.replaceChildren();Object.keys(LOADERS).forEach(k=>{const b=E('button',k===loader?'on':'',LOADERS[k]);b.addEventListener('click',()=>{loader=k;draw()});lg.append(b)});
+    pg.replaceChildren();Object.keys(PRESETS).forEach(k=>{const b=E('button',k===preset?'on':'',PRESETS[k].n);b.addEventListener('click',()=>{preset=k;draw()});pg.append(b)});
+    const p=PRESETS[preset];info.textContent=p.d+' — '+p.ram+' MB RAM, '+p.r+' renderer, tuned options.txt (render distance, particles, shadows, FPS cap).'};draw();
+  const mk=btn('Create instance','pri block',()=>{const name=n.value.trim();if(!name)return toast('Give it a name first.');if(S.instances.length>=30)return toast('Maximum 30 instances.');if(S.instances.some(i=>i.name.toLowerCase()===name.toLowerCase()))return toast('That name is taken.');
+    const p=PRESETS[preset],i={id:rid(),name,ver:sel.value,loader,preset,ram:p.ram,renderer:p.r};
+    if(B&&!B.initInstance(i.id,preset))return toast('Could not create the instance folder.');
+    S.instances.push(i);S.instance=i.id;save();renderAll();closeSheet();toast('Instance created.')});
+  body.append(f1,f2,lt,lg,pt,pg,info,mk)})}
+$('newInst').addEventListener('click',openNewInstance);
+function renderInstances(){const box=$('instList');box.replaceChildren();
+  if(!S.instances.length){box.append(E('div','empty','No instances yet.'));return}
+  S.instances.forEach(i=>{const c=E('div','card px'),r=E('div','row'),cube=E('div','cube','▣'),info=E('div','grow'),t=E('div','ell',i.name);t.style.fontWeight='800';
+    const m=E('div','muted small',instLabel(i));info.append(t,m);r.append(cube,info);
+    if(i.id===S.instance)r.append(E('span','badge mono','Active'));
+    const a=E('div','row');a.style.marginTop='10px';
+    a.append(btn('Select','sm'+(i.id===S.instance?'':' pri'),()=>{S.instance=i.id;save();renderAll();toast(i.name+' selected')}),btn('Mods','sm',()=>{S.instance=i.id;S.tab='mods';save();renderAll();go('content')}));
+    const d=btn('Delete','sm bad',()=>{});confirmTap(d,'Tap again',()=>{if(B)B.deleteInstance(i.id);S.instances=S.instances.filter(x=>x.id!==i.id);if(S.instance===i.id)S.instance=S.instances[0]?S.instances[0].id:null;save();renderAll()});a.append(d);
+    c.append(r,a);box.append(c)})}
+
+/* ---------- content (mods / packs / shaders) ---------- */
+let reqN=0,pending={};
+const fmtSize=b=>b>1048576?(b/1048576).toFixed(1)+' MB':Math.max(1,Math.round(b/1024))+' KB';
+const fmtNum=n=>n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'K':String(n);
+function renderContent(){
+  const tabs=$('cTabs');tabs.replaceChildren();Object.keys(KINDS).forEach(k=>{const b=E('button',k===S.tab?'on':'',KINDS[k]);b.addEventListener('click',()=>{S.tab=k;save();renderContent()});tabs.append(b)});
+  const i=inst(),ban=$('cBanner'),tools=$('cTools');ban.replaceChildren();tools.replaceChildren();$('cResults').replaceChildren();
+  if(!i){ban.append(E('p','empty','Create or select an instance first.'),btn('＋ New instance','pri block',openNewInstance));tools.style.display='none';$('cInstalled').replaceChildren();return}
+  tools.style.display='';
+  const r=E('div','row'),info=E('div','grow'),t=E('div','ell',i.name);t.style.fontWeight='800';info.append(t,E('div','muted small',i.ver+' · '+LOADERS[i.loader]));r.append(E('div','cube','▣'),info,btn('Import','sm',()=>{if(!B)return toast('Open inside the DOClient app to import files.');B.pickContent(i.id,S.tab)}));ban.append(r);
+  const vanilla=S.tab==='mods'&&i.loader==='vanilla';
+  if(vanilla){tools.append(E('p','muted small','Vanilla instances do not load mods. Create a Fabric, Forge or NeoForge instance to browse mods.'))}
+  else{const f=E('label','field');f.style.margin='0';f.append(E('span',null,'Search Modrinth ('+KINDS[S.tab].toLowerCase()+' for '+i.ver+')'));const q=E('input');q.type='text';q.maxLength=64;q.placeholder='e.g. sodium, lithium, faithful';f.append(q);
+    const go1=btn('Search','pri block',()=>runSearch(q.value));go1.style.marginTop='8px';tools.append(f,go1);
+    q.addEventListener('keydown',e=>{if(e.key==='Enter')runSearch(q.value)});
+    if(S.tab==='mods'&&i.loader==='fabric')tools.append(E('p','muted small','Most Fabric mods also need Fabric API — search for it and install it too.'))}
+  renderInstalled()}
+function renderInstalled(){const box=$('cInstalled'),i=inst();box.replaceChildren();if(!i)return;
+  let list=[];try{list=B?JSON.parse(B.listContent(i.id,S.tab)):[]}catch(e){}
+  if(!list.length){box.append(E('p','empty',B?'Nothing installed yet.':'File management works inside the Android app.'));return}
+  list.forEach(f=>{const row=E('div','item'),info=E('div','grow'),n=E('div','ell',f.name);n.style.fontWeight='700';info.append(n,E('div','muted small',fmtSize(f.size)));
+    const d=btn('Remove','sm bad',()=>{});confirmTap(d,'Sure?',()=>{B.deleteContent(i.id,S.tab,f.name);renderInstalled()});row.append(info,d);box.append(row)})}
+function runSearch(q){const i=inst();if(!i)return;if(!B)return toast('Open inside the DOClient app to search Modrinth.');
+  const box=$('cResults');box.replaceChildren();const c=E('div','card px');c.append(E('p','empty','Searching…'));box.append(c);reqN++;B.modrinthSearch(q,i.ver,i.loader,S.tab,String(reqN))}
+window.onModrinthSearch=(req,ok,payload)=>{if(req!==String(reqN))return;const box=$('cResults');box.replaceChildren();const c=E('div','card px');box.append(c);
+  if(!ok){c.append(E('p','empty','Search failed: '+payload));return}
+  let hits=[];try{hits=JSON.parse(payload)}catch(e){}
+  if(!hits.length){c.append(E('p','empty','No results for this version and loader.'));return}
+  hits.forEach(h=>{const row=E('div','item'),cube=E('div','cube');
+    if(h.icon&&h.icon.startsWith('https://cdn.modrinth.com/')){const im=E('img');im.src=h.icon;im.alt='';im.loading='lazy';cube.textContent='';cube.append(im)}else cube.textContent='▣';
+    const info=E('div','grow'),t=E('div','ell',h.title);t.style.fontWeight='800';const d=E('div','muted small clamp',h.desc);info.append(t,d,E('div','muted small','by '+h.author+' · ⬇ '+fmtNum(h.downloads)));
+    const b=btn('Install','sm pri',()=>{const i=inst();if(!i)return;b.disabled=true;b.textContent='…';pending[h.id]=b;B.modrinthInstall(i.id,S.tab,h.id,i.ver,i.loader)});row.append(cube,info,b);c.append(row)})};
+window.onModrinthInstall=(id,ok,msg)=>{const b=pending[id];if(b){b.textContent=ok?'Done ✓':'Retry';b.disabled=ok;delete pending[id]}toast(msg);if(ok)renderInstalled()};
+window.onContentImported=(kind,n,skipped)=>{toast(n+' file(s) imported'+(skipped?', '+skipped+' skipped (wrong type: mods need .jar, packs/shaders .zip)':'.'));renderInstalled()};
+
+/* ---------- skin ---------- */
+function needAcct(){if(!acct()){toast('Add an offline account first.');openAccounts();return true}return false}
+$('pSkin').addEventListener('click',()=>{if(needAcct())return;if(!B)return toast('Open inside the DOClient app to choose a file.');B.pickImage('skin')});
+$('pCape').addEventListener('click',()=>{if(needAcct())return;if(!B)return toast('Open inside the DOClient app to choose a file.');B.pickImage('cape')});
+$('pReset').addEventListener('click',()=>{const a=acct();if(!a)return;a.skin=null;a.cape=null;save();refreshTextures();renderAll();toast('Skin and cape reset.')});
+$('pWalk').addEventListener('click',()=>{const on=!chars[1].el.classList.contains('walk');chars.forEach(c=>c.el.classList.toggle('walk',on));$('pWalk').textContent=on?'■ Stop':'▶ Walk'});
+window.onNativeImagePicked=(kind,url,err)=>{if(err)return toast(err);const a=acct();if(!a||!url)return;a[kind]=url;save();refreshTextures();renderAll();toast(kind==='skin'?'Skin applied.':'Cape applied.')};
+
+/* ---------- servers ---------- */
+function copyText(t){try{const i=E('input');i.value=t;i.style.cssText='position:fixed;opacity:0';document.body.append(i);i.select();document.execCommand('copy');i.remove();toast('Address copied.')}catch(e){toast(t)}}
+function renderServers(){const box=$('srvList');box.replaceChildren();
+  if(!S.servers.length){box.append(E('p','muted small','Save the servers you play on. Tap to copy the address.'));return}
+  S.servers.forEach(s=>{const row=E('div','item'),info=E('button','grow'),n=E('div','ell',s.name);n.style.cssText='font-weight:800;text-align:left';const a=E('div','muted small ell',s.addr);a.style.textAlign='left';info.append(n,a);info.addEventListener('click',()=>copyText(s.addr));
+    const d=btn('✕','sm bad',()=>{});confirmTap(d,'Sure?',()=>{S.servers=S.servers.filter(x=>x.id!==s.id);save();renderServers()});row.append(info,d);box.append(row)})}
+$('addSrv').addEventListener('click',()=>openSheet('Add server',body=>{
+  const f1=E('label','field'),n=E('input');n.type='text';n.maxLength=32;f1.append(E('span',null,'Name'),n);
+  const f2=E('label','field'),a=E('input');a.type='text';a.maxLength=105;a.placeholder='play.example.net:25565';a.autocapitalize='off';a.spellcheck=false;f2.append(E('span',null,'Address'),a);
+  body.append(f1,f2,btn('Save server','pri block',()=>{const name=n.value.trim(),addr=a.value.trim();if(!name)return toast('Enter a name.');if(!/^[A-Za-z0-9.\-]{1,100}(:\d{1,5})?$/.test(addr))return toast('Enter a valid address.');if(S.servers.length>=20)return toast('Maximum 20 servers.');S.servers.push({id:rid(),name,addr});save();renderServers();closeSheet()}))}));
+
+/* ---------- home ---------- */
+function renderHome(){
+  const a=acct(),i=inst();$('chipName').textContent=a?a.name:'No account';$('homeName').textContent=a?a.name:'';$('homeTag').textContent=a?'Offline':'No account';drawHead($('chipHead'));
+  const pill=$('instPill');pill.classList.toggle('none',!i);$('instPillText').textContent=i?i.name+'  ·  '+i.ver+' '+LOADERS[i.loader]:'No instance — tap to create';
+  $('playSub').textContent=i?PRESETS[i.preset].n+' · '+i.ram+' MB':'Select an instance'}
+$('instPill').addEventListener('click',()=>{if(inst())go('instances');else openNewInstance()});
+$('tInst').addEventListener('click',()=>go('instances'));
+$('tMods').addEventListener('click',()=>{S.tab='mods';save();go('content')});
+$('tPacks').addEventListener('click',()=>{S.tab='resourcepacks';save();go('content')});
+
+/* ---------- play / preflight ---------- */
+$('playBtn').addEventListener('click',runPreflight);
+function runPreflight(){
+  const a=acct(),i=inst();$('launch').classList.add('on');$('lClose').style.display='none';$('lMsg').textContent='';$('lTitle').textContent='Preflight';
+  const fg=$('gfg'),box=$('lSteps');box.replaceChildren();fg.style.strokeDashoffset='326.7';
+  const engine=!!(B&&B.engineAvailable&&B.engineAvailable());
+  const checks=[
+    ['Account',()=>a?{ok:true,t:a.name+' · offline'}:{ok:false,t:'Add an offline account first.'}],
+    ['Instance',()=>i?{ok:true,t:i.name+' · '+i.ver+' '+LOADERS[i.loader]}:{ok:false,t:'Create or select an instance.'}],
+    ['Performance profile',()=>i?{ok:true,t:PRESETS[i.preset].n+' · '+i.ram+' MB · '+i.renderer}:{ok:false,t:'No instance selected.'}],
+    ['Java runtime & renderer',()=>engine?{ok:true,t:'Ready'}:{ok:false,t:'Not installed yet.',engine:true}]];
+  const rows=checks.map(c=>{const r=E('div','step'),ic=E('i',null,'○');r.append(ic,E('span',null,c[0]));box.append(r);return{r,ic}});
+  const wait=ms=>new Promise(r=>setTimeout(r,calm()?60:ms));
+  (async()=>{
+    for(let k=0;k<checks.length;k++){
+      rows[k].r.className='step run';rows[k].ic.textContent='◜';await wait(600);
+      const res=checks[k][1]();rows[k].r.className='step '+(res.ok?'ok':'fail');rows[k].ic.textContent=res.ok?'✓':'✕';
+      rows[k].r.lastChild.textContent=checks[k][0]+' — '+res.t;fg.style.strokeDashoffset=String(326.7*(1-(k+1)/checks.length));
+      if(!res.ok){$('lTitle').textContent=res.engine?'Almost there':'Not ready';
+        $('lMsg').textContent=res.engine?'Your account, instance and settings are ready. Minecraft itself cannot start yet: the Java runtime and renderer are the next milestone, and DOClient will not pretend otherwise.':res.t;
+        $('lClose').style.display='';return}}
+    $('lTitle').textContent='Ready';$('lMsg').textContent='Launch bridge is not implemented in this build.';$('lClose').style.display=''})()}
+$('lClose').addEventListener('click',()=>$('launch').classList.remove('on'));
+
+/* ---------- settings ---------- */
+function renderSettings(){const sw=$('swatches');sw.replaceChildren();Object.keys(ACC).forEach(k=>{const b=E('button','swatch px'+(k===S.set.accent?' on':''));b.style.background='linear-gradient(135deg,'+ACC[k][0]+' 55%,'+ACC[k][1]+' 55%)';b.setAttribute('aria-label',k);b.addEventListener('click',()=>{S.set.accent=k;save();applyTheme();renderSettings()});sw.append(b)});
+  $('calm').checked=S.set.calm;$('scale').value=S.set.scale}
+$('calm').addEventListener('change',e=>{S.set.calm=e.target.checked;save();applyTheme()});
+$('scale').addEventListener('input',e=>{S.set.scale=+e.target.value;applyTheme()});$('scale').addEventListener('change',save);
+$('goAbout').addEventListener('click',()=>go('about'));$('aboutBack').addEventListener('click',()=>go('settings'));
+confirmTap($('reset'),'Tap again',()=>{if(B)S.instances.forEach(i=>B.deleteInstance(i.id));S=fresh();save();applyTheme();refreshTextures();renderAll();go('home');toast('App data reset.')});
+
+/* ---------- versions ---------- */
+window.onVersions=(ok,payload)=>{if(!ok)return;try{const d=JSON.parse(payload);if(d.releases&&d.releases.length)versions=d.releases}catch(e){}};
+
+function renderAll(){renderHome();renderInstances();renderServers();renderSettings();if(activePage==='content')renderContent()}
+
+/* ---------- boot ---------- */
+applyTheme();
+mountChar('homeStage',7,'home');mountChar('skinStage',9,'skin');
+refreshTextures();renderAll();requestAnimationFrame(tick);
+if(B){B.fetchVersions();S.instances.forEach(i=>B.initInstance(i.id,i.preset))}
+</script>
+</body>
+</html>
